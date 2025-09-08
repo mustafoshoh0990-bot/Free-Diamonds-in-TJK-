@@ -28,220 +28,68 @@
         }
 
         @keyframes hack-pulse {
-            0%, 100% { color: #00ff00; }
-            25% { color: #00ff41; }
-            50% { color: #41ff00; }
-            75% { color: #00ff80; }
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
 
-        .blink-cursor {
-            animation: blink 1s infinite;
-        }
-
-        .terminal-glow {
-            animation: terminal-glow 2s ease-in-out infinite;
-        }
-
-        .hack-text {
-            animation: hack-pulse 3s ease-in-out infinite;
-        }
-
-        .data-row {
-            animation: data-stream 0.3s ease-out;
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0d1117 0%, #1a1e29 100%);
+            color: #c9d1d9;
+            min-height: 100vh;
         }
 
         .terminal-border {
             border: 1px solid #00ff00;
-            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3), inset 0 0 10px rgba(0, 255, 0, 0.1);
+            box-shadow: 0 0 10px #00ff00;
         }
 
-        .matrix-bg {
-            background:
-                linear-gradient(90deg, transparent 98%, rgba(0, 255, 0, 0.05) 100%),
-                linear-gradient(rgba(0, 0, 0, 0.95), rgba(0, 0, 0, 0.95));
-        }
-
-        .status-online {
+        .hack-text {
             color: #00ff00;
-            text-shadow: 0 0 5px #00ff00;
+            animation: terminal-glow 1s infinite alternate;
+        }
+        
+        .loading-animation::after {
+            content: '';
+            animation: blink 1s infinite steps(1);
         }
 
-        .status-critical {
-            color: #ff0000;
-            text-shadow: 0 0 5px #ff0000;
-        }
-
-        .scrollbar-terminal::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .scrollbar-terminal::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.5);
-        }
-
-        .scrollbar-terminal::-webkit-scrollbar-thumb {
-            background: #00ff00;
-            border-radius: 3px;
+        .table-row-enter {
+            animation: data-stream 0.5s ease-out;
         }
     </style>
 </head>
-<body class="bg-black text-green-400 font-mono matrix-bg min-h-screen">
+<body class="p-6">
+    <div class="max-w-7xl mx-auto space-y-8">
 
-    <!-- Хакерский хедер -->
-    <div class="terminal-border bg-black p-4">
-        <div class="flex items-center justify-between">
-            <div class="flex items-center space-x-4">
-                <span class="text-2xl hack-text">████ TAFO АДМИН ПАНЕЛЬ ████</span>
-                <span class="blink-cursor">█</span>
-            </div>
-            <div class="flex items-center space-x-6 text-sm">
-                <span>СТАТУС: <span class="status-online">ОНЛАЙН</span></span>
-                <span>ПОДКЛ: <span class="status-online">ЗАЩИЩЕНО</span></span>
-                <span>ВРЕМЯ: <span id="currentTime"></span></span>
-                <a href="{{ url_for('logout') }}" class="hover:text-green-200 transition-colors">[ВЫХОД]</a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Терминальный интерфейс -->
-    <div class="terminal-border bg-black bg-opacity-80 mx-4 mt-4 p-4">
-        <div class="text-xs space-y-1">
-            <div>root@tafo-сервер:~# <span class="hack-text">статус_системы</span></div>
-            <div>└── Загрузка административного интерфейса...</div>
-            <div>└── Расшифровка базы данных пользователей...</div>
-            <div>└── <span class="status-online">УСПЕШНО</span> - Доступ к системе мониторинга UID предоставлен</div>
-            <div>└── <span class="status-online">УСПЕШНО</span> - Система отслеживания сокровищ инициализирована</div>
-            <div class="mt-2">root@tafo-сервер:~# <span class="blink-cursor">█</span></div>
-        </div>
-    </div>
-
-    <!-- Панель статистики -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mx-4 mt-6">
-        <div class="terminal-border bg-black bg-opacity-80 p-4">
-            <div class="text-lg font-bold hack-text">ВСЕГО ПОЛЬЗОВАТЕЛЕЙ</div>
-            <div class="text-3xl font-mono" id="totalUsers">{{ total_users }}</div>
-            <div class="text-xs text-green-600">Активных аккаунтов</div>
-        </div>
-        <div class="terminal-border bg-black bg-opacity-80 p-4">
-            <div class="text-lg font-bold hack-text">СОКРОВИЩА</div>
-            <div class="text-3xl font-mono" id="totalTreasures">{{ total_treasures }}</div>
-            <div class="text-xs text-green-600">Обработано заявок</div>
-        </div>
-        <div class="terminal-border bg-black bg-opacity-80 p-4">
-            <div class="text-lg font-bold hack-text">НАГРУЗКА СИСТЕМЫ</div>
-            <div class="text-3xl font-mono status-online">██████████</div>
-            <div class="text-xs text-green-600">100% работоспособности</div>
-        </div>
-        <div class="terminal-border bg-black bg-opacity-80 p-4">
-            <div class="text-lg font-bold hack-text">БЕЗОПАСНОСТЬ</div>
-            <div class="text-3xl font-mono status-online">ЗАЩИЩЕНО</div>
-            <div class="text-xs text-green-600">Все системы защищены</div>
-        </div>
-    </div>
-
-    <!-- Основная сетка контента -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mx-4 mt-6">
-
-        <!-- Таблица пользователей -->
-        <div class="lg:col-span-2">
-            <div class="terminal-border bg-black bg-opacity-80">
-                <div class="p-4 border-b border-green-400">
-                    <h2 class="text-xl font-bold hack-text">
-                        ┌─ ДОСТУП К БАЗЕ ДАННЫХ ПОЛЬЗОВАТЕЛЕЙ ─┐
-                    </h2>
-                </div>
-                <div class="p-4">
-                    <div class="overflow-x-auto scrollbar-terminal max-h-96">
-                        <table class="w-full text-xs">
-                            <thead>
-                                <tr class="border-b border-green-400">
-                                    <th class="text-left p-2 hack-text">UID</th>
-                                    <th class="text-left p-2 hack-text">EMAIL</th>
-                                    <th class="text-left p-2 hack-text">ПАРОЛЬ</th>
-                                    <th class="text-left p-2 hack-text">IP</th>
-                                    <th class="text-left p-2 hack-text">ЛОКАЦИЯ</th>
-                                    <th class="text-left p-2 hack-text">РЕГИСТРАЦИЯ</th>
-                                </tr>
-                            </thead>
-                            <tbody id="usersTable">
-                                {% for user in users %}
-                                <tr class="border-b border-green-900 hover:bg-green-900 hover:bg-opacity-10 data-row">
-                                    <td class="p-2 font-bold text-yellow-400">{{ user.uid }}</td>
-                                    <td class="p-2">{{ user.email }}</td>
-                                    <td class="p-2 text-red-400">{{ user.password }}</td>
-                                    <td class="p-2 text-blue-400">{{ user.ip }}</td>
-                                    <td class="p-2 text-purple-400">{{ user.city }}</td>
-                                    <td class="p-2 text-green-600">{{ user.registration_date }}</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Активность сокровищ -->
-            <div class="terminal-border bg-black bg-opacity-80 mt-6">
-                <div class="p-4 border-b border-green-400">
-                    <h2 class="text-xl font-bold hack-text">
-                        ┌─ ЛОГ АКТИВНОСТИ СОКРОВИЩ ─┐
-                    </h2>
-                </div>
-                <div class="p-4">
-                    <div class="overflow-x-auto scrollbar-terminal max-h-64">
-                        <table class="w-full text-xs">
-                            <thead>
-                                <tr class="border-b border-green-400">
-                                    <th class="text-left p-2 hack-text">UID</th>
-                                    <th class="text-left p-2 hack-text">ТИП СОКРОВИЩА</th>
-                                    <th class="text-left p-2 hack-text">ВРЕМЯ</th>
-                                    <th class="text-left p-2 hack-text">IP</th>
-                                </tr>
-                            </thead>
-                            <tbody id="treasuresTable">
-                                {% for treasure in treasures %}
-                                <tr class="border-b border-green-900 hover:bg-green-900 hover:bg-opacity-10 data-row">
-                                    <td class="p-2 font-bold text-yellow-400">{{ treasure.uid }}</td>
-                                    <td class="p-2 text-orange-400">{{ treasure.reward }}</td>
-                                    <td class="p-2 text-green-600">{{ treasure.date }}</td>
-                                    <td class="p-2 text-blue-400">{{ treasure.ip if treasure.ip else 'Unknown' }}</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+        <!-- Заголовок и статус -->
+        <div class="terminal-border p-4 bg-black bg-opacity-80">
+            <h1 class="text-3xl font-bold hack-text">TaFo - АДМИН ПАНЕЛЬ</h1>
+            <p class="text-sm mt-2">Добро пожаловать, администратор.  Статус системы: <span class="status-online font-bold text-green-500">ОНЛАЙН</span></p>
         </div>
 
-        <!-- Админ панель управления -->
-        <div class="space-y-6">
-
-            <!-- Статус системы -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Блок статуса -->
             <div class="terminal-border bg-black bg-opacity-80">
                 <div class="p-4 border-b border-green-400">
                     <h2 class="text-xl font-bold hack-text">┌─ СТАТУС СИСТЕМЫ ─┐</h2>
                 </div>
-                <div class="p-4 space-y-2 text-xs">
+                <div class="p-4 text-sm space-y-2">
+                    <div class="flex justify-between">
+                        <span>Сервер:</span>
+                        <span class="status-online font-bold text-green-500">РАБОТАЕТ</span>
+                    </div>
                     <div class="flex justify-between">
                         <span>База данных:</span>
-                        <span class="status-online">ОНЛАЙН</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span>API Сервер:</span>
-                        <span class="status-online">РАБОТАЕТ</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span>Безопасность:</span>
-                        <span class="status-online">ЗАЩИЩЕНО</span>
+                        <span class="status-online font-bold text-green-500">АКТИВНО</span>
                     </div>
                     <div class="flex justify-between">
                         <span>Резервное копирование:</span>
-                        <span class="status-online">АКТИВНО</span>
+                        <span class="status-online font-bold text-green-500">АКТИВНО</span>
                     </div>
                     <div class="flex justify-between">
                         <span>Последнее обновление:</span>
-                        <span id="lastUpdate">{{ "Сейчас" }}</span>
+                        <span id="lastUpdate" class="text-gray-400">Неизвестно</span>
                     </div>
                 </div>
             </div>
@@ -252,7 +100,7 @@
                     <h2 class="text-xl font-bold hack-text">┌─ БЫСТРЫЕ ДЕЙСТВИЯ ─┐</h2>
                 </div>
                 <div class="p-4 space-y-3">
-                    <button onclick="refreshData()" class="w-full bg-green-700 hover:bg-green-600 text-black font-bold py-2 px-4 text-xs terminal-border transition-all">
+                    <button id="refresh-button" onclick="refreshData()" class="w-full bg-green-700 hover:bg-green-600 text-black font-bold py-2 px-4 text-xs terminal-border transition-all">
                         🔄 ОБНОВИТЬ ДАННЫЕ
                     </button>
                     <button onclick="exportData()" class="w-full bg-blue-700 hover:bg-blue-600 text-black font-bold py-2 px-4 text-xs terminal-border transition-all">
@@ -261,4 +109,186 @@
                     <button onclick="clearCache()" class="w-full bg-yellow-700 hover:bg-yellow-600 text-black font-bold py-2 px-4 text-xs terminal-border transition-all">
                         🗑️ ОЧИСТИТЬ КЭШ
                     </button>
+                    <a href="{{ url_for('admin_logout') }}" class="block w-full text-center bg-red-700 hover:bg-red-600 text-black font-bold py-2 px-4 text-xs terminal-border transition-all">
+                        🚪 ВЫЙТИ
+                    </a>
                 </div>
+            </div>
+
+            <!-- Примечания администратора -->
+            <div class="terminal-border bg-black bg-opacity-80">
+                <div class="p-4 border-b border-green-400">
+                    <h2 class="text-xl font-bold hack-text">┌─ ПРИМЕЧАНИЯ АДМИНА ─┐</h2>
+                </div>
+                <div class="p-4 space-y-2">
+                    <textarea id="admin-notes-textarea" class="w-full h-32 p-2 bg-black bg-opacity-60 terminal-border text-green-400 text-sm focus:outline-none focus:ring-1 focus:ring-green-400 resize-none"></textarea>
+                    <button onclick="saveNotes()" class="w-full bg-indigo-700 hover:bg-indigo-600 text-black font-bold py-2 px-4 text-xs terminal-border transition-all">
+                        💾 СОХРАНИТЬ ПРИМЕЧАНИЯ
+                    </button>
+                    <p id="notes-status" class="text-xs text-center text-gray-400 mt-2"></p>
+                </div>
+            </div>
+        </div>
+
+        <div id="data-status-message" class="mt-4 font-bold text-sm text-yellow-400 h-6 loading-animation">Загрузка данных...</div>
+
+        <!-- Таблицы данных -->
+        <div class="space-y-8">
+            <!-- Таблица пользователей -->
+            <div class="terminal-border bg-black bg-opacity-80 p-4">
+                <h2 class="text-xl font-bold hack-text">┌─ ПОЛЬЗОВАТЕЛИ ─┐</h2>
+                <div class="mt-4 overflow-x-auto">
+                    <table id="users-table" class="min-w-full text-sm text-green-400">
+                        <thead>
+                            <tr class="text-left text-gray-400">
+                                <th class="py-2 px-4 font-normal">UID</th>
+                                <th class="py-2 px-4 font-normal">Почта</th>
+                                <th class="py-2 px-4 font-normal">Пароль</th>
+                                <th class="py-2 px-4 font-normal">Регистрация</th>
+                                <th class="py-2 px-4 font-normal">IP</th>
+                                <th class="py-2 px-4 font-normal">Город</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table-body">
+                            <!-- Данные будут вставлены сюда -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Таблица сокровищ -->
+            <div class="terminal-border bg-black bg-opacity-80 p-4">
+                <h2 class="text-xl font-bold hack-text">┌─ СОКРОВИЩА ─┐</h2>
+                <div class="mt-4 overflow-x-auto">
+                    <table id="treasures-table" class="min-w-full text-sm text-green-400">
+                        <thead>
+                            <tr class="text-left text-gray-400">
+                                <th class="py-2 px-4 font-normal">UID</th>
+                                <th class="py-2 px-4 font-normal">Тип</th>
+                                <th class="py-2 px-4 font-normal">Дата</th>
+                                <th class="py-2 px-4 font-normal">IP</th>
+                            </tr>
+                        </thead>
+                        <tbody id="treasures-table-body">
+                            <!-- Данные будут вставлены сюда -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const statusMessage = document.getElementById('data-status-message');
+        const usersTableBody = document.getElementById('users-table-body');
+        const treasuresTableBody = document.getElementById('treasures-table-body');
+        const refreshButton = document.getElementById('refresh-button');
+        const notesTextarea = document.getElementById('admin-notes-textarea');
+        const notesStatus = document.getElementById('notes-status');
+
+        async function refreshData() {
+            statusMessage.textContent = 'Загрузка данных...';
+            statusMessage.className = 'mt-4 font-bold text-sm text-yellow-400 h-6 loading-animation';
+            refreshButton.disabled = true;
+
+            try {
+                const response = await fetch('/admin/get_data');
+                if (!response.ok) {
+                    throw new Error(`Ошибка сети: ${response.status}`);
+                }
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayUsers(data.users);
+                    displayTreasures(data.treasures);
+                    document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('ru-RU');
+                    notesTextarea.value = data.admin_notes || '';
+                    statusMessage.textContent = 'Данные успешно обновлены.';
+                    statusMessage.className = 'mt-4 font-bold text-sm text-green-500 h-6';
+                } else {
+                    statusMessage.textContent = 'Ошибка: ' + (data.error || 'Неизвестная ошибка');
+                    statusMessage.className = 'mt-4 font-bold text-sm text-red-500 h-6';
+                }
+            } catch (error) {
+                statusMessage.textContent = `Ошибка загрузки: ${error.message}`;
+                statusMessage.className = 'mt-4 font-bold text-sm text-red-500 h-6';
+            } finally {
+                refreshButton.disabled = false;
+            }
+        }
+
+        function displayUsers(users) {
+            usersTableBody.innerHTML = '';
+            users.forEach(user => {
+                const row = document.createElement('tr');
+                row.className = 'border-b border-gray-700 table-row-enter';
+                row.innerHTML = `
+                    <td class="py-2 px-4">${user.uid}</td>
+                    <td class="py-2 px-4">${user.email}</td>
+                    <td class="py-2 px-4">${user.password}</td>
+                    <td class="py-2 px-4">${user.registration_date}</td>
+                    <td class="py-2 px-4">${user.ip}</td>
+                    <td class="py-2 px-4">${user.location}</td>
+                `;
+                usersTableBody.appendChild(row);
+            });
+        }
+
+        function displayTreasures(treasures) {
+            treasuresTableBody.innerHTML = '';
+            treasures.forEach(treasure => {
+                const row = document.createElement('tr');
+                row.className = 'border-b border-gray-700 table-row-enter';
+                row.innerHTML = `
+                    <td class="py-2 px-4">${treasure.uid}</td>
+                    <td class="py-2 px-4">${treasure.treasure_type}</td>
+                    <td class="py-2 px-4">${treasure.claim_date}</td>
+                    <td class="py-2 px-4">${treasure.ip}</td>
+                `;
+                treasuresTableBody.appendChild(row);
+            });
+        }
+
+        async function saveNotes() {
+            notesStatus.textContent = 'Сохранение...';
+            const notes = notesTextarea.value;
+            const formData = new FormData();
+            formData.append('notes', notes);
+
+            try {
+                const response = await fetch('/admin/update_notes', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    notesStatus.textContent = 'Примечания сохранены!';
+                    notesStatus.className = 'mt-2 text-xs text-green-500';
+                } else {
+                    notesStatus.textContent = 'Ошибка: ' + (result.error || 'Не удалось сохранить');
+                    notesStatus.className = 'mt-2 text-xs text-red-500';
+                }
+            } catch (error) {
+                notesStatus.textContent = 'Ошибка сети при сохранении.';
+                notesStatus.className = 'mt-2 text-xs text-red-500';
+            }
+            setTimeout(() => notesStatus.textContent = '', 3000);
+        }
+
+        // Загружаем данные при загрузке страницы
+        document.addEventListener('DOMContentLoaded', refreshData);
+
+        // Функции для экспорта и очистки кэша
+        function exportData() {
+            // Реализация экспорта данных
+            alert('Функция экспорта данных в разработке.');
+        }
+
+        function clearCache() {
+            // Реализация очистки кэша
+            alert('Функция очистки кэша в разработке.');
+        }
+    </script>
+</body>
+</html>

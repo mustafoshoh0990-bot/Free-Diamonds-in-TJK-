@@ -185,6 +185,21 @@ def claim_treasure():
         return jsonify({"error": "User not found"}), 404
 
 
+# Activate reward endpoint
+@app.route("/activate", methods=["POST"])
+def activate():
+    if "user_id" not in session:
+        return jsonify({"error": "Not authenticated"}), 401
+
+    uid = session["user_id"]
+    log_action(f"User attempted to activate reward", uid=uid)
+
+    # Placeholder for activation logic
+    # You can add your activation code here
+
+    return jsonify({"success": True, "message": "Activation request received"})
+
+
 # User logout
 @app.route("/logout")
 def logout():

@@ -62,28 +62,28 @@
     </div>
 
     <!-- Скрипт -->
-    <script>
-        const registerPage = document.getElementById('register-page');
-        const loginPage = document.getElementById('login-page');
+   <script>
+    const registerPage = document.getElementById('register-page');
+    const loginPage = document.getElementById('login-page');
 
-        function showLoginPage(event) {
-            if (event) event.preventDefault();
-            registerPage.classList.add('hidden');
-            loginPage.classList.remove('hidden');
-        }
+    // Показать страницу входа
+    function showLoginPage() {
+        registerPage.classList.add('hidden');
+        loginPage.classList.remove('hidden');
+    }
 
-        function showRegisterPage(event) {
-            if (event) event.preventDefault();
-            loginPage.classList.add('hidden');
-            registerPage.classList.remove('hidden');
-        }
+    // Показать страницу регистрации
+    function showRegisterPage() {
+        loginPage.classList.add('hidden');
+        registerPage.classList.remove('hidden');
+    }
 
-        // Если сервер передал ошибку — показываем форму входа
-        const error = "{{ error|default('') }}";
-        if (error) {
-            showLoginPage();
-        }
-    </script>
+    // Если ошибка передана от Flask → открываем страницу входа
+    {% if error %}
+        showLoginPage();
+    {% endif %}
+</script>
 
 </body>
 </html>
+

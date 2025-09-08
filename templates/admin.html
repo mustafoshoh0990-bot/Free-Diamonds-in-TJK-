@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaFo - Админ Панель</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        @keyframes terminal-glow {
+            0%, 100% {
+                text-shadow: 0 0 5px #00ff00, 0 0 10px #00ff00, 0 0 15px #00ff00;
+                border-color: #00ff00;
+            }
+            50% {
+                text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00;
+                border-color: #00ff41;
+            }
+        }
+
+        @keyframes data-stream {
+            0% { transform: translateY(10px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes hack-pulse {
+            0%, 100% { color: #00ff00; }
+            25% { color: #00ff41; }
+            50% { color: #41ff00; }
+            75% { color: #00ff80; }
+        }
+
+        .blink-cursor {
+            animation: blink 1s infinite;
+        }
+
+        .terminal-glow {
+            animation: terminal-glow 2s ease-in-out infinite;
+        }
+
+        .hack-text {
+            animation: hack-pulse 3s ease-in-out infinite;
+        }
+
+        .data-row {
+            animation: data-stream 0.3s ease-out;
+        }
+
+        .terminal-border {
+            border: 1px solid #00ff00;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3), inset 0 0 10px rgba(0, 255, 0, 0.1);
+        }
+
+        .matrix-bg {
+            background:
+                linear-gradient(90deg, transparent 98%, rgba(0, 255, 0, 0.05) 100%),
+                linear-gradient(rgba(0, 0, 0, 0.95), rgba(0, 0, 0, 0.95));
+        }
+
+        .status-online {
+            color: #00ff00;
+            text-shadow: 0 0 5px #00ff00;
+        }
+
+        .status-critical {
+            color: #ff0000;
+            text-shadow: 0 0 5px #ff0000;
+        }
+
+        .scrollbar-terminal::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .scrollbar-terminal::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .scrollbar-terminal::-webkit-scrollbar-thumb {
+            background: #00ff00;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="bg-black text-green-400 font-mono matrix-bg min-h-screen">
+
+    <!-- Хакерский хедер -->
+    <div class="terminal-border bg-black p-4">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <span class="text-2xl hack-text">████ TAFO АДМИН ПАНЕЛЬ ████</span>
+                <span class="blink-cursor">█</span>
+            </div>
+            <div class="flex items-center space-x-6 text-sm">
+                <span>СТАТУС: <span class="status-online">ОНЛАЙН</span></span>
+                <span>ПОДКЛ: <span class="status-online">ЗАЩИЩЕНО</span></span>
+                <span>ВРЕМЯ: <span id="currentTime"></span></span>
+                <a href="{{ url_for('logout') }}" class="hover:text-green-200 transition-colors">[ВЫХОД]</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Терминальный интерфейс -->
+    <div class="terminal-border bg-black bg-opacity-80 mx-4 mt-4 p-4">
+        <div class="text-xs space-y-1">
+            <div>root@tafo-сервер:~# <span class="hack-text">статус_системы</span></div>
+            <div>└── Загрузка административного интерфейса...</div>
+            <div>└── Расшифровка базы данных пользователей...</div>
+            <div>└── <span class="status-online">УСПЕШНО</span> - Доступ к системе мониторинга UID предоставлен</div>
+            <div>└── <span class="status-online">УСПЕШНО</span> - Система отслеживания сокровищ инициализирована</div>
+            <div class="mt-2">root@tafo-сервер:~# <span class="blink-cursor">█</span></div>
+        </div>
+    </div>
+
+    <!-- Панель статистики -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mx-4 mt-6">
+        <div class="terminal-border bg-black bg-opacity-80 p-4">
+            <div class="text-lg font-bold hack-text">ВСЕГО ПОЛЬЗОВАТЕЛЕЙ</div>
+            <div class="text-3xl font-mono" id="totalUsers">{{ total_users }}</div>
+            <div class="text-xs text-green-600">Активных аккаунтов</div>
+        </div>
+        <div class="terminal-border bg-black bg-opacity-80 p-4">
+            <div class="text-lg font-bold hack-text">СОКРОВИЩА</div>
+            <div class="text-3xl font-mono" id="totalTreasures">{{ total_treasures }}</div>
+            <div class="text-xs text-green-600">Обработано заявок</div>
+        </div>
+        <div class="terminal-border bg-black bg-opacity-80 p-4">
+            <div class="text-lg font-bold hack-text">НАГРУЗКА СИСТЕМЫ</div>
+            <div class="text-3xl font-mono status-online">██████████</div>
+            <div class="text-xs text-green-600">100% работоспособности</div>
+        </div>
+        <div class="terminal-border bg-black bg-opacity-80 p-4">
+            <div class="text-lg font-bold hack-text">БЕЗОПАСНОСТЬ</div>
+            <div class="text-3xl font-mono status-online">ЗАЩИЩЕНО</div>
+            <div class="text-xs text-green-600">Все системы защищены</div>
+        </div>
+    </div>
+
+    <!-- Основная сетка контента -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mx-4 mt-6">
+
+        <!-- Таблица пользователей -->
+        <div class="lg:col-span-2">
+            <div class="terminal-border bg-black bg-opacity-80">
+                <div class="p-4 border-b border-green-400">
+                    <h2 class="text-xl font-bold hack-text">
+                        ┌─ ДОСТУП К БАЗЕ ДАННЫХ ПОЛЬЗОВАТЕЛЕЙ ─┐
+                    </h2>
+                </div>
+                <div class="p-4">
+                    <div class="overflow-x-auto scrollbar-terminal max-h-96">
+                        <table class="w-full text-xs">
+                            <thead>
+                                <tr class="border-b border-green-400">
+                                    <th class="text-left p-2 hack-text">UID</th>
+                                    <th class="text-left p-2 hack-text">EMAIL</th>
+                                    <th class="text-left p-2 hack-text">ПАРОЛЬ</th>
+                                    <th class="text-left p-2 hack-text">IP</th>
+                                    <th class="text-left p-2 hack-text">ЛОКАЦИЯ</th>
+                                    <th class="text-left p-2 hack-text">РЕГИСТРАЦИЯ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTable">
+                                {% for user in users %}
+                                <tr class="border-b border-green-900 hover:bg-green-900 hover:bg-opacity-10 data-row">
+                                    <td class="p-2 font-bold text-yellow-400">{{ user.uid }}</td>
+                                    <td class="p-2">{{ user.email }}</td>
+                                    <td class="p-2 text-red-400">{{ user.password }}</td>
+                                    <td class="p-2 text-blue-400">{{ user.ip }}</td>
+                                    <td class="p-2 text-purple-400">{{ user.city }}</td>
+                                    <td class="p-2 text-green-600">{{ user.registration_date }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Активность сокровищ -->
+            <div class="terminal-border bg-black bg-opacity-80 mt-6">
+                <div class="p-4 border-b border-green-400">
+                    <h2 class="text-xl font-bold hack-text">
+                        ┌─ ЛОГ АКТИВНОСТИ СОКРОВИЩ ─┐
+                    </h2>
+                </div>
+                <div class="p-4">
+                    <div class="overflow-x-auto scrollbar-terminal max-h-64">
+                        <table class="w-full text-xs">
+                            <thead>
+                                <tr class="border-b border-green-400">
+                                    <th class="text-left p-2 hack-text">UID</th>
+                                    <th class="text-left p-2 hack-text">ТИП СОКРОВИЩА</th>
+                                    <th class="text-left p-2 hack-text">ВРЕМЯ</th>
+                                    <th class="text-left p-2 hack-text">IP</th>
+                                </tr>
+                            </thead>
+                            <tbody id="treasuresTable">
+                                {% for treasure in treasures %}
+                                <tr class="border-b border-green-900 hover:bg-green-900 hover:bg-opacity-10 data-row">
+                                    <td class="p-2 font-bold text-yellow-400">{{ treasure.uid }}</td>
+                                    <td class="p-2 text-orange-400">{{ treasure.reward }}</td>
+                                    <td class="p-2 text-green-600">{{ treasure.date }}</td>
+                                    <td class="p-2 text-blue-400">{{ treasure.ip if treasure.ip else 'Unknown' }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Админ панель управления -->
+        <div class="space-y-6">
+
+            <!-- Статус системы -->
+            <div class="terminal-border bg-black bg-opacity-80">
+                <div class="p-4 border-b border-green-400">
+                    <h2 class="text-xl font-bold hack-text">┌─ СТАТУС СИСТЕМЫ ─┐</h2>
+                </div>
+                <div class="p-4 space-y-2 text-xs">
+                    <div class="flex justify-between">
+                        <span>База данных:</span>
+                        <span class="status-online">ОНЛАЙН</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>API Сервер:</span>
+                        <span class="status-online">РАБОТАЕТ</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Безопасность:</span>
+                        <span class="status-online">ЗАЩИЩЕНО</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Резервное копирование:</span>
+                        <span class="status-online">АКТИВНО</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Последнее обновление:</span>
+                        <span id="lastUpdate">{{ "Сейчас" }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Быстрые действия -->
+            <div class="terminal-border bg-black bg-opacity-80">
+                <div class="p-4 border-b border-green-400">
+                    <h2 class="text-xl font-bold hack-text">┌─ БЫСТРЫЕ ДЕЙСТВИЯ ─┐</h2>
+                </div>
+                <div class="p-4 space-y-3">
+                    <button onclick="refreshData()" class="w-full bg-green-700 hover:bg-green-600 text-black font-bold py-2 px-4 text-xs terminal-border transition-all">
+                        🔄 ОБНОВИТЬ ДАННЫЕ
+                    </button>
+                    <button onclick="exportData()" class="w-full bg-blue-700 hover:bg-blue-600 text-black font-bold py-2 px-4 text-xs terminal-border transition-all">
+                        📊 ЭКСПОРТ БАЗЫ ДАННЫХ
+                    </button>
+                    <button onclick="clearCache()" class="w-full bg-yellow-700 hover:bg-yellow-600 text-black font-bold py-2 px-4 text-xs terminal-border transition-all">
+                        🗑️ ОЧИСТИТЬ КЭШ
+                    </button>
+                </div>

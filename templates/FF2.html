@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaFo - Панель Сокровищ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .game-page-bg {
+            background-color: #0c4a6e;
+            color: #f8fafc;
+            background-image:
+                radial-gradient(circle at 25% 25%, rgba(120, 119, 198, 0.4), transparent 50%),
+                radial-gradient(circle at 75% 75%, rgba(255, 119, 198, 0.4), transparent 50%),
+                linear-gradient(135deg, #0c4a6e 0%, #1e293b 100%);
+            background-size: cover;
+            background-position: center;
+        }
+
+        .card {
+            background-color: rgba(13, 30, 48, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(49, 64, 86, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+
+        .btn-primary {
+            @apply bg-emerald-600 text-white hover:bg-emerald-700 focus:ring-emerald-500 w-full font-bold py-3 px-4 rounded-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2;
+        }
+
+        .btn-green {
+            @apply bg-green-600 text-white hover:bg-green-700 focus:ring-green-500 w-full font-bold py-3 px-4 rounded-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2;
+        }
+
+        .btn-disabled {
+            @apply bg-gray-500 text-gray-300 cursor-not-allowed w-full font-bold py-3 px-4 rounded-lg;
+        }
+
+        .coin-icon {
+            display: inline-block;
+            width: 1em;
+            height: 1em;
+            background: linear-gradient(135deg, #fef08a, #facc15);
+            border-radius: 50%;
+            vertical-align: middle;
+            margin-right: 0.5rem;
+            box-shadow: 0 0 8px #facc15;
+        }
+
+        .diamond-icon {
+            display: inline-block;
+            width: 1em;
+            height: 1em;
+            background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+            clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+            vertical-align: middle;
+            margin-right: 0.5rem;
+            box-shadow: 0 0 8px #8b5cf6;
+        }
+
+        .gift-icon {
+            display: inline-block;
+            width: 1em;
+            height: 1em;
+            background: linear-gradient(135deg, #fef08a, #f87171);
+            clip-path: polygon(0% 25%, 50% 0%, 100% 25%, 100% 100%, 0% 100%);
+            vertical-align: middle;
+            margin-right: 0.5rem;
+        }
+
+        .modal {
+            @apply fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900 bg-opacity-75 backdrop-filter backdrop-blur-sm;
+        }
+
+        .modal-content {
+            @apply bg-slate-800 p-8 rounded-2xl shadow-2xl max-w-sm w-full text-center;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            background-color: #374151;
+            color: #ffffff;
+            border: 1px solid #4b5563;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #10b981;
+        }
+
+        .input-field::placeholder {
+            color: #9ca3af;
+        }
+    </style>
+</head>
+<body class="game-page-bg min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-md mx-auto">
+        <div class="mb-4 text-center">
+            <img id="game-image" src="https://images.unsplash.com/photo-1511512578047-dfb367046420?w=400&h=300&fit=crop&crop=center" alt="Game Image" class="w-full max-w-xs mx-auto rounded-lg shadow-lg">
+        </div>
+
+        <div id="rewards-view" class="active">
+            <div class="card p-8 rounded-2xl shadow-xl text-center">
+                <h1 class="text-3xl font-extrabold mb-2">Панель Сокровищ</h1>
+                <p class="text-slate-400 mb-2">Игрок: <span id="user-uid">{{ uid }}</span></p>
+                <p class="text-slate-400 mb-6">Собирайте монеты и обменивайте их на реальные алмазы!</p>
+
+                <div class="grid grid-cols-2 gap-4 bg-slate-800 p-6 rounded-xl my-4">
+                    <div class="flex flex-col items-center">
+                        <p class="text-slate-400 font-medium">Ваши Монеты</p>
+                        <div class="flex items-center text-4xl font-extrabold my-2 text-white">
+                            <span class="coin-icon"></span>
+                            <span id="coins-counter">0</span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <p class="text-slate-400 font-medium">Ваши Алмазы</p>
+                        <div class="flex items-center text-4xl font-extrabold text-violet-500">
+                            <span class="diamond-icon"></span>
+                            <span id="diamonds-counter">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="my-6 space-y-4">
+                    <button id="exchange-button" class="btn-primary">Обменять на 35 Алмазов (500 монет)</button>
+                    <button id="gift-button" class="btn-green">
+                        <span class="gift-icon"></span>
+                        Получить ежедневный подарок
+                    </button>
+                    <button id="gemini-button" class="w-full font-bold py-3 px-4 rounded-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-gray-700 text-white hover:bg-gray-800 focus:ring-gray-600">
+                        Получить совет от ИИ !
+                    </button>
+                </div>
+                <div id="status-message" class="mt-4 font-bold h-6 text-sm"></div>
+            </div>
+            <button id="withdraw-button" class="btn-primary mt-4">Вывод</button>
+
+            <div class="mt-4 text-center">
+                <a href="{{ url_for('logout') }}" class="text-blue-400 hover:text-blue-300 underline mr-4">
+                    Выйти
+                </a>
+                <a href="{{ url_for('index') }}" class="text-blue-400 hover:text-blue-300 underline">
+                    Вернуться к главной
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div id="withdraw-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2 class="text-2xl font-bold mb-4">Вывод Алмазов</h2>
+            <p class="text-slate-400 mb-6">Введите UID игрока, чтобы вывести алмазы.</p>
+            <input id="uid-input" type="text" placeholder="UID игрока" class="input-field mb-4">
+            <button id="submit-withdraw" class="btn-green">Вывести 100 Алмазов</button>
+            <button id="close-withdraw-modal" class="mt-2 w-full py-2 px-4 bg-gray-600 hover:bg-gray-700 text-white rounded-lg">Отмена</button>
+        </div>
+    </div>
+
+    <div id="gemini-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2 class="text-2xl font-bold mb-4">Совет от ИИ</h2>
+            <p id="gemini-text" class="text-slate-400 mb-6"></p>
+            <button id="close-gemini-modal" class="btn-green">Закрыть</button>
+        </div>
+    </div>
+
+    <script>
+        // Получаем UID пользователя из шаблона
+        const USER_UID = document.getElementById('user-uid').textContent.trim();
+        const LOCAL_STORAGE_KEY_COINS = `user_${USER_UID}_coins`;
+        const LOCAL_STORAGE_KEY_DIAMONDS = `user_${USER_UID}_diamonds`;
+        const LOCAL_STORAGE_KEY_LAST_GIFT = `user_${USER_UID}_lastGiftDate`;
+
+        // Загрузка прогресса
+        let coins = parseInt(localStorage.getItem(LOCAL_STORAGE_KEY_COINS)) || 0;
+        let diamonds = parseInt(localStorage.getItem(LOCAL_STORAGE_KEY_DIAMONDS)) || 0;
+
+        // DOM элементы
+        const coinsCounter = document.getElementById('coins-counter');
+        const diamondsCounter = document.getElementById('diamonds-counter');
+        const exchangeButton = document.getElementById('exchange-button');
+        const giftButton = document.getElementById('gift-button');
+        const withdrawButton = document.getElementById('withdraw-button');
+        const withdrawModal = document.getElementById('withdraw-modal');
+        const submitWithdrawButton = document.getElementById('submit-withdraw');
+        const closeWithdrawModal = document.getElementById('close-withdraw-modal');
+        const uidInput = document.getElementById('uid-input');
+        const statusMessage = document.getElementById('status-message');
+        const geminiButton = document.getElementById('gemini-button');
+        const geminiModal = document.getElementById('gemini-modal');
+        const geminiText = document.getElementById('gemini-text');
+        const closeGeminiModal = document.getElementById('close-gemini-modal');
+
+        // Константы игры
+        const EXCHANGE_COST = 500;
+        const EXCHANGE_REWARD = 35;
+        const WITHDRAWAL_REWARD = 100;
+        const DAILY_GIFT_REWARD = 100;
+
+        // Состояние игры
+        let intervalId = null;
+        let isExchanging = false;
+        let lastGiftDate = localStorage.getItem(LOCAL_STORAGE_KEY_LAST_GIFT);
+
+        // Обновление счетчиков на экране
+        function updateCounters() {
+            coinsCounter.textContent = coins;
+            diamondsCounter.textContent = diamonds;
+        }
+
+        // Сохранение прогресса
+        function saveProgress() {
+            localStorage.setItem(LOCAL_STORAGE_KEY_COINS, coins);
+            localStorage.setItem(LOCAL_STORAGE_KEY_DIAMONDS, diamonds);
+        }
+
+        // Запуск генерации монет
+        function startCoinGeneration() {
+            if (intervalId) clearInterval(intervalId);
+
+            intervalId = setInterval(() => {
+                coins += 1;
+                updateCounters();
+                animateCoinGain();
+            }, 1000);
+        }
+
+        // Обмен монет на алмазы
+        exchangeButton.addEventListener('click', () => {
+            if (isExchanging) {
+                statusMessage.textContent = 'Обмен уже идёт...';
+                statusMessage.className = 'mt-4 font-bold h-6 text-sm text-blue-500';
+                return;
+            }
+
+            statusMessage.className = 'mt-4 font-bold h-6 text-sm';
+
+            if (coins >= EXCHANGE_COST) {
+                isExchanging = true;
+                exchangeButton.disabled = true;
+                exchangeButton.textContent = 'Обменивается...';
+                statusMessage.textContent = 'Обработка обмена...';
+                statusMessage.className = 'mt-4 font-bold h-6 text-sm text-blue-500';
+
+                setTimeout(() => {
+                    coins -= EXCHANGE_COST;
+                    diamonds += EXCHANGE_REWARD;
+                    updateCounters();
+                    animateDiamondGain();
+                    saveProgress();
+
+                    // Отправляем запрос на активацию награды на сервер
+                    const formData = new FormData();
+                    formData.append('reward', `Алмазы x${EXCHANGE_REWARD}`);
+
+                    fetch('/activate', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    statusMessage.textContent = `Обмен выполнен! Получено ${EXCHANGE_REWARD} алмазов ✅`;
+                    statusMessage.className = 'mt-4 font-bold h-6 text-sm text-green-500';
+                    isExchanging = false;
+                    exchangeButton.disabled = false;
+                    exchangeButton.textContent = 'Обменять на 35 Алмазов (500 монет)';
+                }, 3000);
+            } else {
+                const needed = EXCHANGE_COST - coins;
+                statusMessage.textContent = `Нужно ещё ${needed} монет для обмена.`;
+                statusMessage.className = 'mt-4 font-bold h-6 text-sm text-red-500';
+            }
+        });
+
+        // Вывод алмазов
+        withdrawButton.addEventListener('click', () => {
+            uidInput.value = USER_UID;
+            withdrawModal.classList.remove('hidden');
+            statusMessage.textContent = '';
+        });
+
+        submitWithdrawButton.addEventListener('click', () => {
+            const uid = uidInput.value.trim();
+
+            if (uid === '') {
+                statusMessage.textContent = 'Пожалуйста, введите UID.';
+                statusMessage.className = 'mt-4 font-bold h-6 text-sm text-red-500';
+                return;
+            }
+
+            if (diamonds < WITHDRAWAL_REWARD) {
+                withdrawModal.classList.add('hidden');
+                statusMessage.textContent = `Недостаточно Алмазов. Нужно ${WITHDRAWAL_REWARD} для вывода.`;
+                statusMessage.className = 'mt-4 font-bold h-6 text-sm text-red-500';
+                return;
+            }
+
+            withdrawModal.classList.add('hidden');
+            statusMessage.textContent = 'Идёт вывод...';
+            statusMessage.className = 'mt-4 font-bold h-6 text-sm text-blue-500';
+
+            setTimeout(() => {
+                diamonds -= WITHDRAWAL_REWARD;
+                updateCounters();
+                saveProgress();
+
+                // Отправляем запрос на активацию вывода на сервер
+                const formData = new FormData();
+                formData.append('reward', `Вывод ${WITHDRAWAL_REWARD} алмазов на UID ${uid}`);
+
+                fetch('/activate', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                statusMessage.textContent = `Выведено ${WITHDRAWAL_REWARD} Алмазов на UID ${uid} ✅`;
+                statusMessage.className = 'mt-4 font-bold h-6 text-sm text-green-500';
+            }, 5000);
+        });
+
+        // Закрытие модальных окон
+        closeWithdrawModal.addEventListener('click', () => {
+            withdrawModal.classList.add('hidden');
+        });
+
+        window.addEventListener('click', (event) => {
+            if (event.target === withdrawModal) {
+                withdrawModal.classList.add('hidden');
+            }
+            if (event.target === geminiModal) {
+                geminiModal.classList.add('hidden');
+            }
+        });
+
+        // Советы от ИИ
+        async function getGeminiResponse() {
+            const tips = [
+                'Привет, путешественник! Чтобы быстро разбогатеть, обменивай монеты на алмазы сразу, как только накопишь 500!',
+                'Не забывай получать ежедневный подарок — это 100 монет бесплатно каждый день!',
+                'Терпение — ключ к успеху! Монеты генерируются автоматически каждую секунду.',
+                'Совет от мастера: копи алмазы для больших покупок в Free Fire!',
+                'Помни: чем дольше ты остаешься в игре, тем больше монет получаешь!',
+                'Твой UID: ' + USER_UID + ' - не забудь его при выводе алмазов!',
+                'Оставляй страницу открытой, чтобы монеты продолжали накапливаться!'
+            ];
+            return tips[Math.floor(Math.random() * tips.length)];
+        }
+
+        geminiButton.addEventListener('click', () => {
+            geminiText.textContent = 'NPC думает...';
+            geminiModal.classList.remove('hidden');
+
+            setTimeout(async () => {
+                const advice = await getGeminiResponse();
+                geminiText.textContent = advice;
+            }, 1500);
+        });
+
+        closeGeminiModal.addEventListener('click', () => {
+            geminiModal.classList.add('hidden');
+        });
+
+        // Ежедневный подарок
+        function checkGiftStatus() {
+            const today = new Date().toDateString();
+
+            if (lastGiftDate === today) {
+                giftButton.innerHTML = 'Подарок уже получен сегодня';
+                giftButton.className = 'btn-disabled';
+                giftButton.disabled = true;
+            } else {
+                giftButton.innerHTML = '<span class="gift-icon"></span>Получить ежедневный подарок';
+                giftButton.className = 'btn-green';
+                giftButton.disabled = false;
+            }
+        }
+
+        giftButton.addEventListener('click', () => {
+            const today = new Date().toDateString();
+            lastGiftDate = today;
+            localStorage.setItem(LOCAL_STORAGE_KEY_LAST_GIFT, today);
+            coins += DAILY_GIFT_REWARD;
+            updateCounters();
+            saveProgress();
+
+            // Отправляем запрос на активацию подарка на сервер
+            const formData = new FormData();
+            formData.append('reward', `Ежедневный подарок ${DAILY_GIFT_REWARD} монет`);
+
+            fetch('/activate', {
+                method: 'POST',
+                body: formData
+            });
+
+            statusMessage.textContent = `Получено ${DAILY_GIFT_REWARD} монет! ✅`;
+            statusMessage.className = 'mt-4 font-bold h-6 text-sm text-green-500';
+            checkGiftStatus();
+        });
+
+        // Анимация при получении монет
+        function animateCoinGain(amount = 1) {
+            const coinElement = document.getElementById('coins-counter');
+            coinElement.style.transform = 'scale(1.2)';
+            coinElement.style.color = '#facc15';
+
+            setTimeout(() => {
+                coinElement.style.transform = 'scale(1)';
+                coinElement.style.color = '#ffffff';
+            }, 200);
+        }
+
+        // Анимация при получении алмазов
+        function animateDiamondGain() {
+            const diamondElement = document.getElementById('diamonds-counter');
+            diamondElement.style.transform = 'scale(1.3)';
+            diamondElement.style.color = '#a78bfa';
+
+            setTimeout(() => {
+                diamondElement.style.transform = 'scale(1)';
+                diamondElement.style.color = '#8b5cf6';
+            }, 300);
+        }
+
+        // Инициализация игры
+        function initializeGame() {
+            checkGiftStatus();
+            startCoinGeneration();
+            updateCounters();
+
+            // Сохраняем прогресс каждые 30 секунд
+            setInterval(saveProgress, 30000);
+
+            // Показываем приветственное сообщение
+            setTimeout(() => {
+                statusMessage.textContent = `Добро пожаловать, игрок ${USER_UID}! Монеты начали генерироваться!`;
+                statusMessage.className = 'mt-4 font-bold h-6 text-sm text-green-500';
+            }, 1000);
+        }
+
+        // Сохранение при закрытии страницы
+        window.addEventListener('beforeunload', () => {
+            saveProgress();
+        });
+
+        // Запуск игры
+        window.addEventListener('DOMContentLoaded', initializeGame);
+    </script>
+</body>
+</html>

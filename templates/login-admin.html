@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaFo - Вход для администратора</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0d1117 0%, #1a1e29 100%);
+            color: #c9d1d9;
+        }
+
+        .container {
+            background-color: rgba(22, 27, 34, 0.9);
+            border: 1px solid #30363d;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+
+        .input-field {
+            background-color: rgba(33, 38, 45, 0.8);
+            border: 1px solid #484f58;
+            color: #c9d1d9;
+            backdrop-filter: blur(5px);
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #58a6ff;
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
+        }
+
+        .btn-admin {
+            background: linear-gradient(135deg, #1f6feb 0%, #0969da 100%);
+            transition: all 0.3s ease;
+        }
+
+        .btn-admin:hover {
+            background: linear-gradient(135deg, #0969da 0%, #0550ae 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(31, 111, 235, 0.3);
+        }
+
+        .admin-icon {
+            background: linear-gradient(135deg, #ffd700, #ffb347);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .error-message {
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+    <div class="w-full max-w-sm mx-auto container p-8 rounded-lg shadow-xl text-center fade-in">
+        <div class="mb-6">
+            <div class="text-4xl mb-2 admin-icon">🔐</div>
+            <h1 class="text-3xl font-bold mb-2">Админ-панель</h1>
+            <p class="text-gray-400 text-sm">Система управления TaFo</p>
+        </div>
+
+        {% if error %}
+        <div class="bg-red-800 bg-opacity-50 border border-red-600 text-red-300 p-3 rounded-lg mb-4 error-message">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <form action="{{ url_for('login_admin') }}" method="post" class="space-y-4">
+            <div class="relative">
+                <input
+                    type="password"
+                    name="password"
+                    placeholder="Пароль администратора"
+                    class="input-field w-full py-3 px-4 rounded-md pr-10"
+                    required
+                    autocomplete="current-password"
+                >
+                <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                    </svg>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-admin w-full py-3 px-4 rounded-md font-semibold transition-all">
+                Войти в систему
+            </button>
+        </form>
+
+        <div class="mt-6 pt-4 border-t border-gray-700">
+            <a href="{{ url_for('index') }}" class="text-blue-400 hover:text-blue-300 underline text-sm transition-colors">
+                ← Вернуться к главной
+            </a>
+        </div>
+
+        <div class="mt-4 text-xs text-gray-500">
+            <p>Только для авторизованного персонала</p>
+        </div>
+    </div>
+
+    <script>
+        // Автофокус на поле пароля
+        document.addEventListener('DOMContentLoaded', function() {
+            const passwordField = document.querySelector('input[name="password"]');
+            if (passwordField) {
+                passwordField.focus();
+            }
+        });
+
+        // Обработка Enter на форме
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const button = document.querySelector('button[type="submit"]');
+            button.textContent = 'Проверка...';
+            button.disabled = true;
+
+            setTimeout(() => {
+                if (!document.querySelector('.error-message')) {
+                    button.textContent = 'Вход выполнен!';
+                }
+            }, 500);
+        });
+    </script>
+</body>
+</html>

@@ -8,7 +8,7 @@ ADMIN_PASSWORD = "12345"
 TAFO_FILE = "TaFo.json"
 LOG_FILE = "TaFo.log"
 
-# Создаем TaFo.json, если его нет
+# Создание TaFo.json, если его нет
 if not os.path.exists(TAFO_FILE):
     data = {"users": [], "treasures": [], "admin_notes": ""}
     with open(TAFO_FILE, "w", encoding="utf-8") as f:
@@ -34,12 +34,29 @@ def get_ip_info(ip):
     except:
         return "Неизвестно"
 
-# Главная страница
 @app.route('/')
 def index():
     return render_template("FF.html")
 
-# Регистрация
+@app.route('/login', methods=['POST'])
+def login():
+    email = request.form.get("email")
+    password = request.form.get("password")
+
+    with open(TAFO_FILE, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    user = next((u for u in data["users"] if u["email"] == email and u["password"] == password), None)
+    if user:
+        session["logged_in"] = True
+        session["uid"] = user["uid"]
+        session["email"] = email
+        log_action("User logged in", uid=user["uid"], email=email)
+        return redirect(url_for('dashboard'))
+    else:
+        log_action("Failed login attempt", email=email)
+        return render_template("FF.html", error="Неверный email или пароль.")
+
 @app.route('/register', methods=['POST'])
 def register():
     email = request.form.get("email")
@@ -50,7 +67,7 @@ def register():
         data = json.load(f)
 
     if any(u["email"] == email for u in data["users"]):
-        log_action("Failed registration: Email exists", email=email)
+        log_action("Failed registration: Email already exists", email=email)
         return render_template("FF.html", error="Этот email уже зарегистрирован.")
 
     ip_info = get_ip_info(request.remote_addr)
@@ -75,27 +92,6 @@ def register():
     session["email"] = email
     return redirect(url_for('dashboard'))
 
-# Вход пользователя
-@app.route('/login', methods=['POST'])
-def login():
-    email = request.form.get("email")
-    password = request.form.get("password")
-
-    with open(TAFO_FILE, "r", encoding="utf-8") as f:
-        data = json.load(f)
-
-    user = next((u for u in data["users"] if u["email"] == email and u["password"] == password), None)
-    if user:
-        session["logged_in"] = True
-        session["uid"] = user["uid"]
-        session["email"] = email
-        log_action("User logged in", uid=user["uid"], email=email)
-        return redirect(url_for('dashboard'))
-    else:
-        log_action("Failed login attempt", email=email)
-        return render_template("FF.html", error="Неверный email или пароль.")
-
-# Личный кабинет пользователя
 @app.route('/dashboard')
 def dashboard():
     if not session.get('logged_in'):
@@ -103,7 +99,7 @@ def dashboard():
 
     with open(TAFO_FILE, "r", encoding="utf-8") as f:
         data = json.load(f)
-
+    
     user_uid = session.get("uid")
     user = next((u for u in data["users"] if u["uid"] == user_uid), None)
     if not user:
@@ -112,7 +108,6 @@ def dashboard():
 
     return render_template("FF2.html", user=user, uid=user_uid)
 
-# Обновление прогресса (монеты/алмазы)
 @app.route('/update_progress', methods=['POST'])
 def update_progress():
     if not session.get('logged_in'):
@@ -136,7 +131,6 @@ def update_progress():
         log_action(f"Failed to save progress: {e}", uid=session.get("uid"), email=session.get("email"))
         return jsonify({"error": "Failed to save progress"}), 500
 
-# Получение сокровищ
 @app.route('/claim_treasure', methods=['POST'])
 def claim_treasure():
     if not session.get('logged_in'):
@@ -144,8 +138,10 @@ def claim_treasure():
     try:
         user_uid = session.get("uid")
         treasure_type = request.json.get("treasure_type")
+
         with open(TAFO_FILE, "r+", encoding="utf-8") as f:
             data = json.load(f)
+
         new_treasure = {
             "uid": user_uid,
             "reward": treasure_type,
@@ -153,15 +149,17 @@ def claim_treasure():
             "ip": request.remote_addr
         }
         data["treasures"].append(new_treasure)
+
         with open(TAFO_FILE, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
+
         log_action(f"Treasure claimed: {treasure_type}", uid=user_uid, email=session.get("email"))
         return jsonify({"success": True})
     except Exception as e:
         log_action(f"Failed to claim treasure: {e}", uid=session.get("uid"), email=session.get("email"))
         return jsonify({"error": "Failed to claim treasure"}), 500
 
-# Админ: вход
+# === Админка ===
 @app.route('/admin_login_page', methods=['GET', 'POST'])
 def login_admin_page():
     if request.method == 'POST':
@@ -175,7 +173,6 @@ def login_admin_page():
             return render_template('login-admin.html', error="Неверный пароль.")
     return render_template('login-admin.html')
 
-# Админ: панель
 @app.route('/admin')
 def admin_dashboard():
     if not session.get('is_admin'):
@@ -184,40 +181,17 @@ def admin_dashboard():
     with open(TAFO_FILE, "r", encoding="utf-8") as f:
         data = json.load(f)
 
-    users = [{
-        "uid": u.get("uid"),
-        "email": u.get("email"),
-        "password": u.get("password"),
-        "ip": u.get("ip"),
-        "location": u.get("city"),
-        "registration_date": u.get("registration_date")
-    } for u in data.get("users", [])]
+    users = [{"uid": u["uid"], "email": u["email"], "password": u["password"],
+              "ip": u["ip"], "location": u.get("city", ""), "registration_date": u["registration_date"]} 
+              for u in data.get("users", [])]
 
-    treasures = [{
-        "uid": t.get("uid"),
-        "treasure_type": t.get("reward"),
-        "claim_date": t.get("date"),
-        "ip": t.get("ip", "Unknown")
-    } for t in data.get("treasures", [])]
+    treasures = [{"uid": t["uid"], "treasure_type": t["reward"], 
+                  "claim_date": t["date"], "ip": t.get("ip", "Unknown")} 
+                  for t in data.get("treasures", [])]
 
     admin_notes = data.get("admin_notes", "")
-
     return render_template('admin.html', users=users, treasures=treasures, admin_notes=admin_notes)
 
-# Админ: обновление заметок
-@app.route('/admin/update_notes', methods=['POST'])
-def update_admin_notes():
-    if not session.get('is_admin'):
-        return jsonify({"error": "Unauthorized"}), 401
-    notes = request.form.get('notes', '')
-    with open(TAFO_FILE, "r", encoding="utf-8") as f:
-        data = json.load(f)
-    data["admin_notes"] = notes
-    with open(TAFO_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=4)
-    return jsonify({"success": True})
-
-# Админ: выход
 @app.route('/admin/logout')
 def admin_logout():
     session.pop('is_admin', None)

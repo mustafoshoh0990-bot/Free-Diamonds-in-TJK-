@@ -126,26 +126,26 @@
         </div>
     </div>
 
-   <script>
-    const registerPage = document.getElementById('register-page');
-    const loginPage = document.getElementById('login-page');
+    <script>
+        const registerPage = document.getElementById('register-page');
+        const loginPage = document.getElementById('login-page');
 
-    function showLoginPage() {
-        registerPage.classList.add('hidden');
-        loginPage.classList.remove('hidden');
-    }
+        // Показать страницу входа
+        function showLoginPage() {
+            registerPage.classList.add('hidden');
+            loginPage.classList.remove('hidden');
+        }
 
-    function showRegisterPage() {
-        loginPage.classList.add('hidden');
-        registerPage.classList.remove('hidden');
-    }
+        // Показать страницу регистрации
+        function showRegisterPage() {
+            loginPage.classList.add('hidden');
+            registerPage.classList.remove('hidden');
+        }
 
-    // Проверяем через переменную, переданную сервером
-    const error = "{{ error|default('') }}";  // если error нет, будет пустая строка
-    if (error) {
+        // Если есть ошибка, показываем форму входа
+        {% if error %}
         showLoginPage();
-    }
-
+        {% endif %}
 
     </script>
 </body>

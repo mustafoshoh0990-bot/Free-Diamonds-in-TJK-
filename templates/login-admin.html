@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TaFo - Вход для администратора</title>
+    <title>TaFo - Заработай бесплатные алмазы Free Fire!</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,102 +11,142 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #0d1117 0%, #1a1e29 100%);
-            color: #c9d1d9;
         }
 
-        .container {
-            background-color: rgba(22, 27, 34, 0.9);
-            border: 1px solid #30363d;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        .main-page-bg {
+            background-color: #0d1117;
+            color: #c9d1d9;
+            background-image:
+                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3), transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3), transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(120, 219, 255, 0.3), transparent 50%);
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
         }
 
         .input-field {
             background-color: rgba(33, 39, 47, 0.6);
             border: 1px solid #30363d;
             color: #c9d1d9;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            width: 100%;
+            font-size: 0.875rem;
         }
+
         .input-field:focus {
             border-color: #58a6ff;
             outline: none;
             box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.2);
         }
-
-        .btn-admin {
-            background-color: #238636;
-            color: #fff;
-            border: 1px solid #2ea043;
+        
+        .main-container {
+            background-color: rgba(22, 27, 34, 0.9);
+            border: 1px solid #30363d;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
         }
 
-        .btn-admin:hover {
-            background-color: #2ea043;
-            box-shadow: 0 0 0 2px rgba(46, 160, 67, 0.5);
+        .btn-primary {
+            background-color: #1f845d;
+            color: #fff;
+            font-weight: 600;
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+
+        .btn-primary:hover {
+            background-color: #23a86c;
+        }
+
+        .btn-secondary {
+            background-color: #58a6ff;
+            color: #fff;
+            font-weight: 600;
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+
+        .btn-secondary:hover {
+            background-color: #4c96e6;
         }
     </style>
 </head>
-<body class="flex items-center justify-center min-h-screen p-4">
-    <div class="container w-full max-w-sm mx-auto p-8 rounded-lg shadow-lg">
+<body class="main-page-bg flex items-center justify-center min-h-screen p-4">
+    <div class="main-container w-full max-w-md mx-auto p-8 rounded-lg shadow-lg text-center">
         <div class="text-center mb-6">
-            <h1 class="text-3xl font-bold mb-2">Вход для администратора</h1>
-            <p class="text-gray-400">Панель управления TaFo</p>
+            <h1 class="text-4xl font-extrabold text-blue-400 mb-2">TaFo</h1>
+            <p class="text-xl font-medium text-gray-300">Free Fire Diamonds Generator</p>
         </div>
 
+        <!-- Сообщение об ошибке -->
         {% if error %}
         <div class="bg-red-900 p-3 rounded-md mb-4 text-sm text-red-300">
             {{ error }}
         </div>
         {% endif %}
 
-        <!-- Обновление: Форма теперь отправляет данные на новый маршрут -->
-        <form method="POST" action="{{ url_for('process_admin_login') }}" class="space-y-4">
-            <div class="relative">
-                <label for="password" class="block text-sm font-medium mb-1">Пароль</label>
-                <input type="password" id="password" name="password" placeholder="Введите пароль" class="input-field w-full py-2 px-3 rounded-md" required>
-                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                    <svg class="h-5 w-5 text-gray-400 mt-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                        <path fill-rule="evenodd" d="M12 1.5a5.25 5.25 0 00-5.25 5.25v3a3 3 0 00-3 3v6.75a3 3 0 003 3h10.5a3 3 0 003-3v-6.75a3 3 0 00-3-3v-3c0-2.9-2.35-5.25-5.25-5.25zm3.75 8.25v-3a3.75 3.75 0 10-7.5 0v3h7.5z" clip-rule="evenodd"></path>
-                    </svg>
-                </div>
-            </div>
-
-            <button type="submit" class="btn-admin w-full py-3 px-4 rounded-md font-semibold transition-all">
-                Войти в систему
-            </button>
-        </form>
-
-        <div class="mt-6 pt-4 border-t border-gray-700">
-            <a href="{{ url_for('index') }}" class="text-blue-400 hover:text-blue-300 underline text-sm transition-colors">
-                ← Вернуться к главной
+        <!-- Страница регистрации -->
+        <div id="register-page" class="space-y-4">
+            <p class="text-gray-400">Создайте аккаунт и начните зарабатывать алмазы!</p>
+            <form id="register-form" action="{{ url_for('register') }}" method="POST" class="space-y-4">
+                <input type="email" name="email" placeholder="Email" class="input-field" required>
+                <input type="number" name="uid" placeholder="UID Free Fire" class="input-field" required>
+                <input type="password" name="password" placeholder="Пароль" class="input-field" required>
+                <button type="submit" class="btn-primary">Зарегистрироваться</button>
+            </form>
+            <a href="#" onclick="showLoginPage()" class="text-blue-400 hover:text-blue-300 underline">
+                Уже есть аккаунт? Войти
             </a>
         </div>
 
-        <div class="mt-4 text-xs text-gray-500">
-            <p>Только для авторизованного персонала</p>
+        <!-- Страница входа -->
+        <div id="login-page" class="space-y-4 hidden">
+            <p class="text-gray-400">Войдите в свой аккаунт</p>
+            <form id="login-form" action="{{ url_for('login') }}" method="POST" class="space-y-4">
+                <input type="email" name="email" placeholder="Email" class="input-field" required>
+                <input type="password" name="password" placeholder="Пароль" class="input-field" required>
+                <button type="submit" class="btn-secondary">Войти</button>
+            </form>
+            <a href="#" onclick="showRegisterPage()" class="text-blue-400 hover:text-blue-300 underline">
+                Нет аккаунта? Зарегистрироваться
+            </a>
+        </div>
+
+        <div class="mt-6 pt-4 border-t border-gray-600">
+            <!-- ИСПРАВЛЕНИЕ: Мы изменили 'login_admin' на 'login_admin_page' -->
+            <a href="{{ url_for('login_admin_page') }}" class="text-xs text-gray-500 hover:text-gray-400 underline">
+                Вход для администратора
+            </a>
         </div>
     </div>
 
     <script>
-        // Автофокус на поле пароля
-        document.addEventListener('DOMContentLoaded', function() {
-            const passwordField = document.querySelector('input[name="password"]');
-            if (passwordField) {
-                passwordField.focus();
-            }
-        });
+        const registerPage = document.getElementById('register-page');
+        const loginPage = document.getElementById('login-page');
 
-        // Обработка Enter на форме
-        document.querySelector('form').addEventListener('submit', function(e) {
-            const button = document.querySelector('button[type="submit"]');
-            button.textContent = 'Проверка...';
-            button.disabled = true;
+        // Показать страницу входа
+        function showLoginPage() {
+            registerPage.classList.add('hidden');
+            loginPage.classList.remove('hidden');
+        }
 
-            setTimeout(() => {
-                if (!document.querySelector('.error-message')) {
-                    button.textContent = 'Вход выполнен!';
-                }
-            }, 1000);
-        });
+        // Показать страницу регистрации
+        function showRegisterPage() {
+            loginPage.classList.add('hidden');
+            registerPage.classList.remove('hidden');
+        }
+
+        // Если есть ошибка, показываем форму входа
+        {% if error %}
+        showLoginPage();
+        {% endif %}
+
     </script>
 </body>
 </html>

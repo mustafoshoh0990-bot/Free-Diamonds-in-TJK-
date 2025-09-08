@@ -23,83 +23,49 @@
         }
 
         .input-field {
-            background-color: rgba(33, 38, 45, 0.8);
-            border: 1px solid #484f58;
+            background-color: rgba(33, 39, 47, 0.6);
+            border: 1px solid #30363d;
             color: #c9d1d9;
-            backdrop-filter: blur(5px);
         }
-
         .input-field:focus {
-            outline: none;
             border-color: #58a6ff;
-            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.2);
         }
 
         .btn-admin {
-            background: linear-gradient(135deg, #1f6feb 0%, #0969da 100%);
-            transition: all 0.3s ease;
+            background-color: #238636;
+            color: #fff;
+            border: 1px solid #2ea043;
         }
 
         .btn-admin:hover {
-            background: linear-gradient(135deg, #0969da 0%, #0550ae 100%);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(31, 111, 235, 0.3);
-        }
-
-        .admin-icon {
-            background: linear-gradient(135deg, #ffd700, #ffb347);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .error-message {
-            animation: shake 0.5s ease-in-out;
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .fade-in {
-            animation: fadeIn 0.6s ease-out;
+            background-color: #2ea043;
+            box-shadow: 0 0 0 2px rgba(46, 160, 67, 0.5);
         }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-4">
-    <div class="w-full max-w-sm mx-auto container p-8 rounded-lg shadow-xl text-center fade-in">
-        <div class="mb-6">
-            <div class="text-4xl mb-2 admin-icon">🔐</div>
-            <h1 class="text-3xl font-bold mb-2">Админ-панель</h1>
-            <p class="text-gray-400 text-sm">Система управления TaFo</p>
+    <div class="container w-full max-w-sm mx-auto p-8 rounded-lg shadow-lg">
+        <div class="text-center mb-6">
+            <h1 class="text-3xl font-bold mb-2">Вход для администратора</h1>
+            <p class="text-gray-400">Панель управления TaFo</p>
         </div>
 
         {% if error %}
-        <div class="bg-red-800 bg-opacity-50 border border-red-600 text-red-300 p-3 rounded-lg mb-4 error-message">
+        <div class="bg-red-900 p-3 rounded-md mb-4 text-sm text-red-300">
             {{ error }}
         </div>
         {% endif %}
 
-        <form action="{{ url_for('login_admin') }}" method="post" class="space-y-4">
+        <!-- Обновление: Форма теперь отправляет данные на новый маршрут -->
+        <form method="POST" action="{{ url_for('process_admin_login') }}" class="space-y-4">
             <div class="relative">
-                <input
-                    type="password"
-                    name="password"
-                    placeholder="Пароль администратора"
-                    class="input-field w-full py-3 px-4 rounded-md pr-10"
-                    required
-                    autocomplete="current-password"
-                >
-                <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
-                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                <label for="password" class="block text-sm font-medium mb-1">Пароль</label>
+                <input type="password" id="password" name="password" placeholder="Введите пароль" class="input-field w-full py-2 px-3 rounded-md" required>
+                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                    <svg class="h-5 w-5 text-gray-400 mt-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M12 1.5a5.25 5.25 0 00-5.25 5.25v3a3 3 0 00-3 3v6.75a3 3 0 003 3h10.5a3 3 0 003-3v-6.75a3 3 0 00-3-3v-3c0-2.9-2.35-5.25-5.25-5.25zm3.75 8.25v-3a3.75 3.75 0 10-7.5 0v3h7.5z" clip-rule="evenodd"></path>
                     </svg>
                 </div>
             </div>
@@ -139,7 +105,7 @@
                 if (!document.querySelector('.error-message')) {
                     button.textContent = 'Вход выполнен!';
                 }
-            }, 500);
+            }, 1000);
         });
     </script>
 </body>

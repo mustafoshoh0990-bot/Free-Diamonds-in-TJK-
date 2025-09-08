@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TaFo - Заработай бесплатные алмазы Free Fire!</title>
+    <title>TaFo - Вход для администратора</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,20 +11,18 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-        }
-
-        .main-page-bg {
             background-color: #0d1117;
             color: #c9d1d9;
-            background-image:
-                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3), transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3), transparent 50%),
-                radial-gradient(circle at 40% 80%, rgba(120, 219, 255, 0.3), transparent 50%);
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
         }
-
+        .container {
+            max-width: 400px;
+            margin: 100px auto;
+            background-color: rgba(22, 27, 34, 0.9);
+            padding: 2rem;
+            border-radius: 1rem;
+            border: 1px solid #30363d;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        }
         .input-field {
             background-color: rgba(33, 39, 47, 0.6);
             border: 1px solid #30363d;
@@ -32,22 +30,14 @@
             padding: 0.75rem;
             border-radius: 0.5rem;
             width: 100%;
+            margin-bottom: 1rem;
             font-size: 0.875rem;
         }
-
         .input-field:focus {
             border-color: #58a6ff;
             outline: none;
             box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.2);
         }
-        
-        .main-container {
-            background-color: rgba(22, 27, 34, 0.9);
-            border: 1px solid #30363d;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-        }
-
         .btn-primary {
             background-color: #1f845d;
             color: #fff;
@@ -57,95 +47,46 @@
             width: 100%;
             transition: background-color 0.3s;
         }
-
         .btn-primary:hover {
             background-color: #23a86c;
         }
-
-        .btn-secondary {
-            background-color: #58a6ff;
+        .error-box {
+            background-color: #b91c1c;
             color: #fff;
-            font-weight: 600;
-            border-radius: 0.5rem;
             padding: 0.75rem;
-            width: 100%;
-            transition: background-color 0.3s;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
         }
-
-        .btn-secondary:hover {
-            background-color: #4c96e6;
+        h1 {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 800;
+            color: #58a6ff;
+            margin-bottom: 1rem;
         }
     </style>
 </head>
-<body class="main-page-bg flex items-center justify-center min-h-screen p-4">
-    <div class="main-container w-full max-w-md mx-auto p-8 rounded-lg shadow-lg text-center">
-        <div class="text-center mb-6">
-            <h1 class="text-4xl font-extrabold text-blue-400 mb-2">TaFo</h1>
-            <p class="text-xl font-medium text-gray-300">Free Fire Diamonds Generator</p>
-        </div>
+<body>
+    <div class="container">
+        <h1>Админка TaFo</h1>
 
-        <!-- Сообщение об ошибке -->
         {% if error %}
-        <div class="bg-red-900 p-3 rounded-md mb-4 text-sm text-red-300">
+        <div class="error-box">
             {{ error }}
         </div>
         {% endif %}
 
-        <!-- Страница регистрации -->
-        <div id="register-page" class="space-y-4">
-            <p class="text-gray-400">Создайте аккаунт и начните зарабатывать алмазы!</p>
-            <form id="register-form" action="{{ url_for('register') }}" method="POST" class="space-y-4">
-                <input type="email" name="email" placeholder="Email" class="input-field" required>
-                <input type="number" name="uid" placeholder="UID Free Fire" class="input-field" required>
-                <input type="password" name="password" placeholder="Пароль" class="input-field" required>
-                <button type="submit" class="btn-primary">Зарегистрироваться</button>
-            </form>
-            <a href="#" onclick="showLoginPage()" class="text-blue-400 hover:text-blue-300 underline">
-                Уже есть аккаунт? Войти
-            </a>
-        </div>
+        <form action="{{ url_for('login_admin_page') }}" method="POST">
+            <input type="password" name="password" placeholder="Пароль администратора" class="input-field" required>
+            <button type="submit" class="btn-primary">Войти</button>
+        </form>
 
-        <!-- Страница входа -->
-        <div id="login-page" class="space-y-4 hidden">
-            <p class="text-gray-400">Войдите в свой аккаунт</p>
-            <form id="login-form" action="{{ url_for('login') }}" method="POST" class="space-y-4">
-                <input type="email" name="email" placeholder="Email" class="input-field" required>
-                <input type="password" name="password" placeholder="Пароль" class="input-field" required>
-                <button type="submit" class="btn-secondary">Войти</button>
-            </form>
-            <a href="#" onclick="showRegisterPage()" class="text-blue-400 hover:text-blue-300 underline">
-                Нет аккаунта? Зарегистрироваться
-            </a>
-        </div>
-
-        <div class="mt-6 pt-4 border-t border-gray-600">
-            <!-- Исправленная ссылка на админский вход -->
-            <a href="{{ url_for('login_admin_page') }}" class="text-xs text-gray-500 hover:text-gray-400 underline">
-                Вход для администратора
+        <div class="mt-4 text-center">
+            <a href="{{ url_for('index') }}" class="text-blue-400 hover:text-blue-300 underline text-sm">
+                Вернуться на главную
             </a>
         </div>
     </div>
-
-    <script>
-        const registerPage = document.getElementById('register-page');
-        const loginPage = document.getElementById('login-page');
-
-        // Показать страницу входа
-        function showLoginPage() {
-            registerPage.classList.add('hidden');
-            loginPage.classList.remove('hidden');
-        }
-
-        // Показать страницу регистрации
-        function showRegisterPage() {
-            loginPage.classList.add('hidden');
-            registerPage.classList.remove('hidden');
-        }
-
-        // Если есть ошибка, показываем форму входа
-        {% if error %}
-        showLoginPage();
-        {% endif %}
-    </script>
 </body>
 </html>

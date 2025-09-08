@@ -1,6 +1,7 @@
 import os
 import json
-from flask import Flask, render_template, request, redirect, url_for, flash
+from datetime import date
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 
 app = Flask(__name__)
 app.secret_key = "supersecretkey123"
@@ -8,7 +9,7 @@ app.secret_key = "supersecretkey123"
 DATA_FILE = "TaFo.json"
 
 # -----------------------
-# Загрузка и сохранение данных пользователей
+# Загрузка и сохранение пользователей
 # -----------------------
 def load_users():
     if not os.path.exists(DATA_FILE):
@@ -28,7 +29,7 @@ def index():
     return render_template("FF.html")
 
 # -----------------------
-# Страница игры
+# Игровая страница по UID
 # -----------------------
 @app.route("/game/<uid>")
 def game(uid):
@@ -38,44 +39,6 @@ def game(uid):
         return redirect(url_for("index"))
     user = users[uid]
     return render_template("FF2.html", user=user)
-
-# -----------------------
-# Регистрация нового пользователя
-# -----------------------
-@app.route("/register", methods=["GET", "POST"])
-def register():
-    users = load_users()
-    if request.method == "POST":
-        uid = request.form.get("uid")
-        if uid in users:
-            flash("Пользователь с таким UID уже существует!", "error")
-            return redirect(url_for("register"))
-
-        users[uid] = {
-            "uid": uid,
-            "coins": 0,
-            "diamonds": 0,
-            "last_gift": ""
-        }
-        save_users(users)
-        flash("Регистрация успешна! Войдите в систему.", "success")
-        return redirect(url_for("login_user"))
-
-    return render_template("register.html")
-
-# -----------------------
-# Логин пользователя
-# -----------------------
-@app.route("/login", methods=["GET", "POST"])
-def login_user():
-    users = load_users()
-    if request.method == "POST":
-        uid = request.form.get("uid")
-        if uid not in users:
-            flash("Пользователь не найден!", "error")
-            return redirect(url_for("login_user"))
-        return redirect(url_for("game", uid=uid))
-    return render_template("login.html")
 
 # -----------------------
 # Логин администратора
@@ -106,7 +69,7 @@ def admin_panel():
 def exchange(uid):
     users = load_users()
     if uid not in users:
-        return {"status": "error", "message": "Пользователь не найден!"}
+        return jsonify({"status": "error", "message": "Пользователь не найден!"})
     user = users[uid]
     cost = 500
     reward = 35
@@ -114,28 +77,27 @@ def exchange(uid):
         user["coins"] -= cost
         user["diamonds"] += reward
         save_users(users)
-        return {"status": "success", "coins": user["coins"], "diamonds": user["diamonds"]}
+        return jsonify({"status": "success", "coins": user["coins"], "diamonds": user["diamonds"]})
     else:
-        return {"status": "error", "message": f"Недостаточно монет. Нужно {cost}."}
+        return jsonify({"status": "error", "message": f"Недостаточно монет. Нужно {cost}."})
 
 # -----------------------
-# Получение ежедневного подарка
+# Ежедневный подарок
 # -----------------------
 @app.route("/daily-gift/<uid>", methods=["POST"])
 def daily_gift(uid):
     users = load_users()
     if uid not in users:
-        return {"status": "error", "message": "Пользователь не найден!"}
+        return jsonify({"status": "error", "message": "Пользователь не найден!"})
     user = users[uid]
-    from datetime import date
     today = date.today().isoformat()
     if user.get("last_gift") == today:
-        return {"status": "error", "message": "Подарок уже получен сегодня!"}
+        return jsonify({"status": "error", "message": "Подарок уже получен сегодня!"})
     reward = 100
     user["coins"] += reward
     user["last_gift"] = today
     save_users(users)
-    return {"status": "success", "coins": user["coins"]}
+    return jsonify({"status": "success", "coins": user["coins"]})
 
 # -----------------------
 # Вывод алмазов
@@ -144,14 +106,14 @@ def daily_gift(uid):
 def withdraw(uid):
     users = load_users()
     if uid not in users:
-        return {"status": "error", "message": "Пользователь не найден!"}
+        return jsonify({"status": "error", "message": "Пользователь не найден!"})
     user = users[uid]
     amount = 100
     if user["diamonds"] < amount:
-        return {"status": "error", "message": f"Недостаточно алмазов. Нужно {amount}."}
+        return jsonify({"status": "error", "message": f"Недостаточно алмазов. Нужно {amount}."})
     user["diamonds"] -= amount
     save_users(users)
-    return {"status": "success", "diamonds": user["diamonds"], "message": f"Выведено {amount} алмазов!"}
+    return jsonify({"status": "success", "diamonds": user["diamonds"], "message": f"Выведено {amount} алмазов!"})
 
 # -----------------------
 # Запуск сервера
